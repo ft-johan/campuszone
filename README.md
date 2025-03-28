@@ -190,7 +190,6 @@ flutter build ios --release
 The application uses a custom font called "Excalifont" located in assets/Fonts/Excalifont.ttf.
 
 ## Contributions
-
 Contributions are welcome! Please follow these steps:
 
 1. Fork the repository
@@ -198,10 +197,6 @@ Contributions are welcome! Please follow these steps:
 3. Commit your changes (`git commit -m 'Add some amazing feature'`)
 4. Push to the branch (`git push origin feature/amazing-feature`)
 5. Open a Pull Request
-
-## License
-
-This project is licensed under the  License - see the LICENSE file for details.
 
 ## Acknowledgements
 
