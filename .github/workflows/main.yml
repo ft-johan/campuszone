@@ -74,12 +74,15 @@ jobs:
             echo "TAG_EXISTS=false" >> $GITHUB_ENV
           fi
 
-      # 10. Modify Tag if it Exists
-      - name: Modify Tag
+      # 10. Delete Existing Tag and Release (if exists)
+      - name: Delete Existing Tag and Release
         if: env.TAG_EXISTS == 'true'
         run: |
-          new_version="${{ env.VERSION }}-build-${{ github.run_number }}"
-          echo "VERSION=$new_version" >> $GITHUB_ENV
+          gh release delete "v${{ env.VERSION }}" --yes || true
+          git tag -d "v${{ env.VERSION }}" || true
+          git push origin --delete "v${{ env.VERSION }}" || true
+        env:
+          GH_TOKEN: ${{ secrets.GH_TOKEN }}
 
       # 11. Create Release
       - name: Create Release
