@@ -12,12 +12,6 @@ jobs:
   build:      
     name: Build & Release 
     runs-on: ubuntu-latest 
-    env:
-      SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
-      SUPABASE_ANON_KEY: ${{ secrets.SUPABASE_ANON_KEY }}
-      CLG_NAME: ${{ secrets.CLG_NAME }}
-
-
     steps:
         #1 Checkout Repository
       - name: Checkout Repository
@@ -36,8 +30,14 @@ jobs:
         with:
           flutter-version: '3.29.0'
           channel: 'stable'
+      
+      - name: Create .env file
+        run: |
+          echo "SUPABASE_URL=${{ secrets.SUPABASE_URL }}" >> .env
+          echo "SUPABASE_ANON_KEY=${{ secrets.SUPABASE_ANON_KEY }}" >> .env
+          echo "CLG_NAME=${{ secrets.CLG_NAME }}" >> .env
 
-        #4 Install Dependencies
+      #4 Install Dependencies
       - name: Install Dependencies
         run: flutter pub get
 
