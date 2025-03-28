@@ -33,6 +33,21 @@ CampusZone is a comprehensive Flutter mobile application designed to enhance cam
   - Message history
   - Real-time updates
 
+## Screenshots
+
+<div style="display: flex; flex-wrap: wrap; gap: 10px;">
+  <img src="https://github.com/user-attachments/assets/a4ec75fb-01cc-443e-a90c-d06ed4bc2cdf" width="150">
+  <img src="https://github.com/user-attachments/assets/7303e637-c207-4543-a016-01c879f7a77d" width="150">
+  <img src="https://github.com/user-attachments/assets/e8e514c6-e537-4f60-a047-1698a4727693" width="150">
+  <img src="https://github.com/user-attachments/assets/a0a0b57d-1ddc-40a9-a468-7c0e9c882cb5" width="150">
+  <img src="https://github.com/user-attachments/assets/f96ff3f8-22e6-4e31-bd69-1ac408c9054a" width="150">
+  <img src="https://github.com/user-attachments/assets/d997fae5-676d-409b-9df7-0c726f3a5fdf" width="150">
+  <img src="https://github.com/user-attachments/assets/48bc5890-00c0-4a32-8dd2-169a0f08e319" width="150">
+  <img src="https://github.com/user-attachments/assets/cf35e964-d149-4212-b5a8-ac241b9559ae" width="150">
+</div>
+
+
+
 ## Project Structure
 
 ```
