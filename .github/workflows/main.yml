@@ -12,6 +12,11 @@ jobs:
   build:      
     name: Build & Release 
     runs-on: ubuntu-latest 
+    env:
+      SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
+      SUPABASE_ANON_KEY: ${{ secrets.SUPABASE_ANON_KEY }}
+      CLG_NAME: ${{ secrets.CLG_NAME }}
+
 
     steps:
         #1 Checkout Repository
@@ -48,14 +53,14 @@ jobs:
           path: |
             build/app/outputs/flutter-apk/app-release.apk
 
-        #10 Extract Version
+        #7 Extract Version
       - name: Extract version from pubspec.yaml
         id: extract_version
         run: |
           version=$(grep '^version: ' pubspec.yaml | cut -d ' ' -f 2 | tr -d '\r')
           echo "VERSION=$version" >> $GITHUB_ENV
 
-        #11 Check if Tag Exists
+        #8 Check if Tag Exists
       - name: Check if Tag Exists
         id: check_tag
         run: |
@@ -65,7 +70,7 @@ jobs:
             echo "TAG_EXISTS=false" >> $GITHUB_ENV
           fi
 
-        #12 Modify Tag if it Exists
+        #9 Modify Tag if it Exists
       - name: Modify Tag
         if: env.TAG_EXISTS == 'true'
         id: modify_tag
@@ -73,7 +78,7 @@ jobs:
           new_version="${{ env.VERSION }}-build-${{ github.run_number }}"
           echo "VERSION=$new_version" >> $GITHUB_ENV
         
-        #13 Create Release
+        #10 Create Release
       - name: Create Release
         uses: ncipollo/release-action@v1
         with:
