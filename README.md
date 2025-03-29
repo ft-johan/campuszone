@@ -57,7 +57,7 @@ CampusZone is a comprehensive Flutter mobile application designed to enhance cam
 ```
 campuszone                              # project root
 ├── analysis_options.yaml
-├── assets                              # custom assets including fonts
+├── assets
 │   ├── fonts
 │   │   └── Excalifont.ttf
 │   └── profile.png
@@ -69,13 +69,13 @@ campuszone                              # project root
 │   │   ├── name_page.dart
 │   │   └── register_page.dart
 │   ├── chat                            # Chat functionality
-│   │   ├── chatList.dart
+│   │   ├── chat_list.dart
 │   │   └── chatmsgpage.dart
-│   ├── custom                          # Custom UI components
+│   ├── custom
 │   │   └── custom_divider.dart
 │   ├── globals.dart                    # Global variables and constants 
 │   ├── main.dart
-│   ├── pages                           # Main navigation pages
+│   ├── pages                           # Main navigation pages including navbar
 │   │   ├── navbar.dart
 │   │   └── profilelink.dart
 │   └── ui                              # UI components organized by feature
@@ -86,14 +86,14 @@ campuszone                              # project root
 │       │       └── events.dart
 │       ├── home                        # Home screen and notice board
 │       │   ├── home.dart
-│       │   └── Noticeboard.dart
+│       │   └── notice_board.dart
 │       ├── profile                     # Profile related screens
 │       │   ├── about.dart
 │       │   ├── editprofile
-│       │   │   ├── EditProfile.dart
+│       │   │   ├── edit_profile.dart
 │       │   │   └── profilepic
 │       │   │       ├── fullscreenpicpage.dart
-│       │   │       └── ProfilePicture.dart
+│       │   │       └── profile_picture.dart
 │       │   ├── profile.dart
 │       │   └── settings.dart
 │       └── resources                   # Resources page including lost and found Section
@@ -102,8 +102,8 @@ campuszone                              # project root
 │           │   │   ├── commentitem.dart
 │           │   │   └── comments.dart
 │           │   ├── fullscreenpicpage.dart
-│           │   ├── LostandFound.dart
-│           │   └── UploadData.dart
+│           │   ├── lost_and_found.dart
+│           │   └── upload_data.dart
 │           └── resources.dart
 ├── pubspec.lock
 ├── pubspec.yaml                        # dependencies and assets 
