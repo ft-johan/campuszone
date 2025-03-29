@@ -66,6 +66,7 @@ class _EditProfilePageState extends State<EditProfilePage> {
         _isLoading = false;
       });
     } catch (e) {
+      if (!mounted) return;
       print('Error fetching user data: $e');
       setState(() => _isLoading = false);
       ScaffoldMessenger.of(context).showSnackBar(
@@ -110,6 +111,7 @@ class _EditProfilePageState extends State<EditProfilePage> {
       );
       Navigator.pop(context, {'updated': true});
     } catch (e) {
+      if (!mounted) return;
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(content: Text('Error updating profile: $e')),
       );

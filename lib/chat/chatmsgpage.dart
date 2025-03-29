@@ -116,15 +116,14 @@ class _ChatMessagePageState extends State<ChatMessagePage>
           .order('created_at', ascending: true)
           .limit(50);
 
-      if (mounted) {
-        setState(() {
-          _messages = List<Map<String, dynamic>>.from(response);
-          _isLoading = false;
-        });
-        // Create animation controllers for each message
-        for (var message in _messages) {
-          _createMessageAnimationController(message['id'].toString());
-        }
+      if (!mounted) return;
+      setState(() {
+        _messages = List<Map<String, dynamic>>.from(response);
+        _isLoading = false;
+      });
+      // Create animation controllers for each message
+      for (var message in _messages) {
+        _createMessageAnimationController(message['id'].toString());
       }
 
       // Fetch user profiles for all messages
@@ -195,53 +194,51 @@ class _ChatMessagePageState extends State<ChatMessagePage>
   }
 
   void _handleNewMessage(dynamic messageData) {
-    if (mounted) {
-      final message = Map<String, dynamic>.from(messageData);
-      setState(() {
-        final messageExists = _messages
-            .any((m) => m['id'].toString() == message['id'].toString());
-        if (!messageExists) {
-          _messages.add(message);
-          _createMessageAnimationController(message['id'].toString());
-          _fetchProfile(message['send_id']);
-          if (message['send_id'] == _recipientId && !_isAtBottom) {
-            _unreadCount++;
-          }
+    if (!mounted) return;
+    final message = Map<String, dynamic>.from(messageData);
+    setState(() {
+      final messageExists = _messages
+          .any((m) => m['id'].toString() == message['id'].toString());
+      if (!messageExists) {
+        _messages.add(message);
+        _createMessageAnimationController(message['id'].toString());
+        _fetchProfile(message['send_id']);
+        if (message['send_id'] == _recipientId && !_isAtBottom) {
+          _unreadCount++;
         }
+      }
+    });
+    if (_isAtBottom || message['send_id'] == _currentUserUid) {
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        _scrollToBottom(animate: true);
       });
-      if (_isAtBottom || message['send_id'] == _currentUserUid) {
-        WidgetsBinding.instance.addPostFrameCallback((_) {
-          _scrollToBottom(animate: true);
-        });
-      }
+    }
 
-      if (message['send_id'] != _currentUserUid) {
-        HapticFeedback.lightImpact();
-      }
+    if (message['send_id'] != _currentUserUid) {
+      HapticFeedback.lightImpact();
     }
   }
 
   void _handleDeletedMessage(dynamic messageData) {
-    if (mounted) {
-      final String messageId = messageData['id'].toString();
-      final controller = _messageAnimControllers[messageId];
-      if (controller != null) {
-        controller.reverse().then((_) {
-          if (mounted) {
-            setState(() {
-              _messages.removeWhere(
-                  (message) => message['id'].toString() == messageId);
-              _messageAnimControllers.remove(messageId);
-            });
-          }
-        });
-      } else {
+    if (!mounted) return;
+    final String messageId = messageData['id'].toString();
+    final controller = _messageAnimControllers[messageId];
+    if (controller != null) {
+      controller.reverse().then((_) {
         if (mounted) {
           setState(() {
             _messages.removeWhere(
                 (message) => message['id'].toString() == messageId);
+            _messageAnimControllers.remove(messageId);
           });
         }
+      });
+    } else {
+      if (mounted) {
+        setState(() {
+          _messages.removeWhere(
+              (message) => message['id'].toString() == messageId);
+        });
       }
     }
   }
@@ -268,12 +265,11 @@ class _ChatMessagePageState extends State<ChatMessagePage>
     try {
       final data =
           await _supabase.from('users').select().eq('id', profileId).single();
-      if (mounted) {
-        setState(() {
-          _userProfiles[profileId] = data;
-          _loadingProfiles[profileId] = false;
-        });
-      }
+      if (!mounted) return;
+      setState(() {
+        _userProfiles[profileId] = data;
+        _loadingProfiles[profileId] = false;
+      });
     } catch (error) {
       if (mounted) {
         setState(() {

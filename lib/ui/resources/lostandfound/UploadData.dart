@@ -119,6 +119,7 @@ class _UploadDataPageState extends State<UploadDataPage> {
     }
 
     setState(() => _isLoading = true);
+    if (!mounted) return;
 
     try {
       final String itemId = const Uuid().v4();
@@ -141,6 +142,7 @@ class _UploadDataPageState extends State<UploadDataPage> {
     } catch (e) {
       _showErrorDialog('Error uploading post: $e');
     } finally {
+      if (!mounted) return;
       setState(() => _isLoading = false);
     }
   }

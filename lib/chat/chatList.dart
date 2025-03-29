@@ -36,6 +36,7 @@ class _ChatPageListState extends State<ChatPageList> {
       fetchedUsers
           .sort((a, b) => (a['name'] as String).compareTo(b['name'] as String));
 
+      if (!mounted) return;
       setState(() {
         users = fetchedUsers;
         isLoading = false;
