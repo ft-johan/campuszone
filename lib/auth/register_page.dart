@@ -68,6 +68,7 @@ class _RegisterPageState extends State<RegisterPage> {
         const SnackBar(content: Text('Registration successful!')),
       );
 
+      if (!mounted) return;
       Navigator.pushReplacement(
         context,
         MaterialPageRoute(builder: (context) => const Navbar()),

@@ -43,19 +43,17 @@ class _HomePageState extends State<HomePage> {
           .select('name')
           .eq('id', user.id)
           .single();
-      if (mounted) {
-        setState(() {
-          userName = response['name'] ?? 'User';
-          isLoading = false;
-        });
-      }
+      if (!mounted) return;
+      setState(() {
+        userName = response['name'] ?? 'User';
+        isLoading = false;
+      });
     } catch (e) {
-      if (mounted) {
-        setState(() {
-          userName = 'User';
-          isLoading = false;
-        });
-      }
+      if (!mounted) return;
+      setState(() {
+        userName = 'User';
+        isLoading = false;
+      });
     }
   }
 

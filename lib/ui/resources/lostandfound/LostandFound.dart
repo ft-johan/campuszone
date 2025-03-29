@@ -41,6 +41,7 @@ class _LostAndFoundPageState extends State<LostAndFoundPage>
   }
 
   Future<void> _fetchPosts() async {
+    if (!mounted) return;
     setState(() {
       _isLoading = true;
       _loadingProgress = 0.0;
@@ -146,6 +147,7 @@ class _LostAndFoundPageState extends State<LostAndFoundPage>
     );
 
     if (confirmed == true) {
+      if (!mounted) return;
       try {
         _showLoadingSnackBar('Deleting post...');
         final String? imagePath = post['image_path'] as String?;
