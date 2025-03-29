@@ -24,7 +24,8 @@ class _ProfilePictureState extends State<ProfilePicture> {
 
   Future<void> _ensureAuthenticated() async {
     final user = Supabase.instance.client.auth.currentUser;
-    if (user == null && mounted) {
+    if (user == null) {
+      if (!mounted) return;
       _showErrorDialog('User is not authenticated. Please login.');
     }
   }
@@ -32,7 +33,8 @@ class _ProfilePictureState extends State<ProfilePicture> {
   Future<bool> _requestPermissions() async {
     final status = await Permission.photos.request();
     if (!status.isGranted) {
-      if (status.isPermanentlyDenied && mounted) {
+      if (status.isPermanentlyDenied) {
+        if (!mounted) return false;
         _showErrorDialog(
           'Photo permission is permanently denied. Please enable it in app settings.',
         );
@@ -46,16 +48,19 @@ class _ProfilePictureState extends State<ProfilePicture> {
   Future<void> _pickAndCropImage() async {
     if (!await _requestPermissions()) return;
 
+    if (!mounted) return;
     setState(() => _isLoading = true);
 
     try {
       final picker = ImagePicker();
       final pickedFile = await picker.pickImage(source: ImageSource.gallery);
+      if (!mounted) return;
       if (pickedFile == null) return;
 
       // Ensure the file is a JPG image
       if (!pickedFile.path.toLowerCase().endsWith('.jpg') &&
           !pickedFile.path.toLowerCase().endsWith('.jpeg')) {
+        if (!mounted) return;
         _showErrorDialog('Please select a JPG image.');
         return;
       }
@@ -71,7 +76,6 @@ class _ProfilePictureState extends State<ProfilePicture> {
             toolbarWidgetColor: Colors.white,
             lockAspectRatio: true,
             cropStyle: CropStyle.circle,
-            // Ensure the cropper respects SafeArea
             statusBarColor: Colors.black,
             hideBottomControls: false,
             initAspectRatio: CropAspectRatioPreset.square,
@@ -83,12 +87,12 @@ class _ProfilePictureState extends State<ProfilePicture> {
             title: 'Crop Image',
             aspectRatioLockEnabled: true,
             cropStyle: CropStyle.circle,
-            // Respect SafeArea on iOS
             minimumAspectRatio: 1.0,
           ),
         ],
       );
 
+      if (!mounted) return;
       if (croppedFile == null) return;
 
       final imageFile = File(croppedFile.path);
@@ -100,7 +104,9 @@ class _ProfilePictureState extends State<ProfilePicture> {
     } catch (e) {
       if (mounted) _showErrorDialog('An error occurred: $e');
     } finally {
-      if (mounted) setState(() => _isLoading = false);
+      if (mounted) {
+        setState(() => _isLoading = false);
+      }
     }
   }
 
@@ -108,7 +114,8 @@ class _ProfilePictureState extends State<ProfilePicture> {
     final supabase = Supabase.instance.client;
     final user = supabase.auth.currentUser;
     if (user == null) {
-      if (mounted) _showErrorDialog('User is not authenticated. Please login.');
+      if (!mounted) return;
+      _showErrorDialog('User is not authenticated. Please login.');
       return;
     }
 
@@ -121,14 +128,12 @@ class _ProfilePictureState extends State<ProfilePicture> {
             fileOptions: const FileOptions(upsert: true),
           );
 
-      if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(
-              content: Text('Profile picture updated successfully.')),
-        );
-        // Navigate back to ProfilePage after success, and signal update.
-        Navigator.pop(context, true);
-      }
+      if (!mounted) return;
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Profile picture updated successfully.')),
+      );
+      if (!mounted) return;
+      Navigator.pop(context, true);
     } catch (e) {
       if (mounted) _showErrorDialog('Error uploading profile picture: $e');
     }
@@ -138,7 +143,8 @@ class _ProfilePictureState extends State<ProfilePicture> {
     final supabase = Supabase.instance.client;
     final user = supabase.auth.currentUser;
     if (user == null) {
-      if (mounted) _showErrorDialog('User is not authenticated. Please login.');
+      if (!mounted) return;
+      _showErrorDialog('User is not authenticated. Please login.');
       return;
     }
 
@@ -146,13 +152,11 @@ class _ProfilePictureState extends State<ProfilePicture> {
 
     try {
       await supabase.storage.from('profilepic').remove([fileName]);
-      if (mounted) {
-        setState(() => _imageFile = null);
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(
-              content: Text('Profile picture removed successfully.')),
-        );
-      }
+      if (!mounted) return;
+      setState(() => _imageFile = null);
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Profile picture removed successfully.')),
+      );
     } catch (e) {
       if (mounted) _showErrorDialog('Error removing profile picture: $e');
     }
@@ -160,14 +164,16 @@ class _ProfilePictureState extends State<ProfilePicture> {
 
   void _showErrorDialog(String message) {
     if (!mounted) return;
+    // Capture the current context before any potential async gap.
+    final currentContext = context;
     showDialog(
-      context: context,
-      builder: (context) => AlertDialog(
+      context: currentContext,
+      builder: (dialogContext) => AlertDialog(
         title: const Text('Error'),
         content: Text(message),
         actions: [
           TextButton(
-            onPressed: () => Navigator.of(context).pop(),
+            onPressed: () => Navigator.of(currentContext).pop(),
             child: const Text('OK'),
           ),
         ],
@@ -242,7 +248,6 @@ class _ProfilePictureState extends State<ProfilePicture> {
                       ),
                     ),
                     const SizedBox(height: 40),
-                    // Buttons below the image selector.
                     ElevatedButton(
                       style: _buttonStyle(),
                       onPressed: _pickAndCropImage,
@@ -253,7 +258,8 @@ class _ProfilePictureState extends State<ProfilePicture> {
                       style: _buttonStylered(),
                       onPressed: () async {
                         await _removeProfilePicture();
-                        // Signal the update after removal.
+                        if (!mounted) return;
+                        // ignore: use_build_context_synchronously
                         Navigator.pop(context, true);
                       },
                       child: const Text('Remove Profile Picture'),
@@ -266,7 +272,9 @@ class _ProfilePictureState extends State<ProfilePicture> {
           if (_isLoading)
             Container(
               color: Colors.black.withAlpha(50),
-              child: const Center(child: CircularProgressIndicator()),
+              child: const Center(
+                child: CircularProgressIndicator(),
+              ),
             ),
         ],
       ),

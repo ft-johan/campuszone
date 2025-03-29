@@ -1,5 +1,5 @@
 import 'package:campuszone/globals.dart';
-import 'package:campuszone/ui/profile/editprofile/profilepic/ProfilePicture.dart';
+import 'package:campuszone/ui/profile/editprofile/profilepic/profile_picture.dart';
 import 'package:flutter/material.dart';
 import 'package:line_icons/line_icons.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
@@ -67,7 +67,6 @@ class _EditProfilePageState extends State<EditProfilePage> {
       });
     } catch (e) {
       if (!mounted) return;
-      print('Error fetching user data: $e');
       setState(() => _isLoading = false);
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(content: Text('Error fetching profile data: $e')),
@@ -106,10 +105,13 @@ class _EditProfilePageState extends State<EditProfilePage> {
       final newCacheBuster = DateTime.now().millisecondsSinceEpoch.toString();
       globalCacheBuster.value = newCacheBuster;
 
+      if (!mounted) return;
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(content: Text('Profile updated successfully!')),
       );
-      Navigator.pop(context, {'updated': true});
+      if (mounted) {
+        Navigator.pop(context, {'updated': true});
+      }
     } catch (e) {
       if (!mounted) return;
       ScaffoldMessenger.of(context).showSnackBar(

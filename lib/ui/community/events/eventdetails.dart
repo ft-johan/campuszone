@@ -88,7 +88,7 @@ class EventDetailPage extends StatelessWidget {
                       ),
                       boxShadow: [
                         BoxShadow(
-                          color: Colors.black.withOpacity(0.4),
+                          color: Colors.black.withValues(alpha: .4),
                           blurRadius: 10,
                           offset: const Offset(0, -5),
                         ),
@@ -240,7 +240,9 @@ class EventDetailPage extends StatelessWidget {
     if (await canLaunchUrl(url)) {
       await launchUrl(url, mode: LaunchMode.externalApplication);
     } else {
-      _showSnackbar(context, 'Could not open the registration link.');
+      if (context.mounted) {
+        _showSnackbar(context, 'Could not open the registration link.');
+      }
     }
   }
 

@@ -9,6 +9,8 @@ class ChatPageList extends StatefulWidget {
   const ChatPageList({super.key});
 
   @override
+  @override
+  // ignore: library_private_types_in_public_api
   _ChatPageListState createState() => _ChatPageListState();
 }
 

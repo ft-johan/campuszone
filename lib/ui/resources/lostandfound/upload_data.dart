@@ -138,12 +138,15 @@ class _UploadDataPageState extends State<UploadDataPage> {
         'created_at': DateTime.now().toIso8601String(),
       });
 
-      Navigator.pop(context, true);
+      if (mounted) {
+        Navigator.pop(context, true);
+      }
     } catch (e) {
       _showErrorDialog('Error uploading post: $e');
     } finally {
-      if (!mounted) return;
-      setState(() => _isLoading = false);
+      if (mounted) {
+        setState(() => _isLoading = false);
+      }
     }
   }
 

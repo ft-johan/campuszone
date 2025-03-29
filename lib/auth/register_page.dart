@@ -40,9 +40,11 @@ class _RegisterPageState extends State<RegisterPage> {
     );
 
     if (name == null || name.isEmpty) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Name is required to register')),
-      );
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text('Name is required to register')),
+        );
+      }
       return;
     }
 

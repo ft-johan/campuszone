@@ -90,7 +90,7 @@ class _ProfileLinkPageState extends State<ProfileLinkPage> {
     // Check if there is an app to handle this URL.
     if (await canLaunchUrl(uri)) {
       await launchUrl(uri);
-    } else {
+    } else if (mounted) {
       ScaffoldMessenger.of(context).showSnackBar(SnackBar(
           content: Text('No application can handle this request: $url')));
     }

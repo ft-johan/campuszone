@@ -1,6 +1,6 @@
 import 'package:campuszone/globals.dart' as globals;
 import 'package:campuszone/ui/profile/editprofile/profilepic/fullscreenpicpage.dart';
-import 'package:campuszone/ui/resources/lostandfound/UploadData.dart';
+import 'package:campuszone/ui/resources/lostandfound/upload_data.dart';
 import 'package:campuszone/ui/resources/lostandfound/comments/comments.dart';
 import 'package:flutter/material.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
@@ -161,7 +161,9 @@ class _LostAndFoundPageState extends State<LostAndFoundPage>
             .delete()
             .eq('item_id', post['item_id']);
 
+        if (!mounted) return;
         ScaffoldMessenger.of(context).hideCurrentSnackBar();
+        if (!mounted) return;
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
             content: Row(
@@ -181,8 +183,10 @@ class _LostAndFoundPageState extends State<LostAndFoundPage>
 
         _fetchPosts();
       } catch (error) {
-        ScaffoldMessenger.of(context).hideCurrentSnackBar();
-        _showErrorDialog('Error deleting post. Please try again.');
+        if (mounted) {
+          ScaffoldMessenger.of(context).hideCurrentSnackBar();
+          _showErrorDialog('Error deleting post. Please try again.');
+        }
       }
     }
   }
@@ -279,7 +283,7 @@ class _LostAndFoundPageState extends State<LostAndFoundPage>
         decoration: BoxDecoration(
           shape: BoxShape.circle,
           border: Border.all(
-            color: Colors.black.withOpacity(0.2),
+            color: Colors.black.withValues(alpha: .2),
             width: 1.5,
           ),
         ),

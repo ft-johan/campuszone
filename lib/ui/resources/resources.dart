@@ -1,5 +1,5 @@
 import 'package:campuszone/custom/custom_divider.dart';
-import 'package:campuszone/ui/resources/lostandfound/LostandFound.dart';
+import 'package:campuszone/ui/resources/lostandfound/lost_and_found.dart';
 import 'package:flutter/material.dart';
 import 'package:line_icons/line_icons.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
@@ -212,9 +212,11 @@ class ResourcesPage extends StatelessWidget {
     if (await canLaunchUrl(uri)) {
       await launchUrl(uri, mode: LaunchMode.externalApplication);
     } else {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('Could not launch $url')),
-      );
+      if (context.mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('Could not launch $url')),
+        );
+      }
     }
   }
 }

@@ -1,7 +1,7 @@
 import 'package:campuszone/auth/login_page.dart';
 import 'package:campuszone/globals.dart';
-import 'package:campuszone/ui/profile/editprofile/EditProfile.dart';
-import 'package:campuszone/ui/profile/editprofile/profilepic/ProfilePicture.dart';
+import 'package:campuszone/ui/profile/editprofile/edit_profile.dart';
+import 'package:campuszone/ui/profile/editprofile/profilepic/profile_picture.dart';
 import 'package:campuszone/ui/profile/editprofile/profilepic/fullscreenpicpage.dart';
 import 'package:campuszone/ui/profile/settings.dart';
 import 'package:flutter/material.dart';
@@ -173,12 +173,14 @@ class _ProfilePageState extends State<ProfilePage>
     if (await canLaunchUrl(uri)) {
       await launchUrl(uri, mode: LaunchMode.externalApplication);
     } else {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: Text('Could not launch $url'),
-          backgroundColor: Colors.red,
-        ),
-      );
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('Could not launch $url'),
+            backgroundColor: Colors.red,
+          ),
+        );
+      }
     }
   }
 
@@ -392,7 +394,7 @@ class _ProfilePageState extends State<ProfilePage>
                         ),
                         boxShadow: [
                           BoxShadow(
-                            color: Colors.black.withOpacity(0.2),
+                            color: Colors.black.withValues(alpha: .2),
                             blurRadius: 10,
                             spreadRadius: 2,
                           ),
@@ -551,7 +553,7 @@ class _ProfilePageState extends State<ProfilePage>
             borderRadius: BorderRadius.circular(12),
             boxShadow: [
               BoxShadow(
-                color: Colors.black.withOpacity(0.1),
+                color: Colors.black.withValues(alpha: .1),
                 blurRadius: 8,
                 spreadRadius: 1,
               ),
@@ -574,7 +576,7 @@ class _ProfilePageState extends State<ProfilePage>
             borderRadius: BorderRadius.circular(12),
             boxShadow: [
               BoxShadow(
-                color: Colors.black.withOpacity(0.1),
+                color: Colors.black.withValues(alpha: .1),
                 blurRadius: 8,
                 spreadRadius: 1,
               ),
@@ -597,7 +599,7 @@ class _ProfilePageState extends State<ProfilePage>
             borderRadius: BorderRadius.circular(12),
             boxShadow: [
               BoxShadow(
-                color: Colors.black.withOpacity(0.1),
+                color: Colors.black.withValues(alpha: .1),
                 blurRadius: 8,
                 spreadRadius: 1,
               ),

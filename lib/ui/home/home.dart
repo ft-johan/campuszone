@@ -1,6 +1,6 @@
-import 'package:campuszone/chat/chatList.dart';
+import 'package:campuszone/chat/chat_list.dart';
 import 'package:campuszone/custom/custom_divider.dart';
-import 'package:campuszone/ui/home/Noticeboard.dart';
+import 'package:campuszone/ui/home/notice_board.dart';
 import 'package:flutter/material.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 import 'dart:async';
