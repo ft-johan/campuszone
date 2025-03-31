@@ -1,13 +1,18 @@
-import 'package:campuszone/ui/resources/lostandfound/comments/commentitem.dart';
+import 'package:campuszone/ui/resources/comments/commentitem.dart';
 import 'package:flutter/material.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 import 'package:line_icons/line_icons.dart';
-import 'package:shimmer/shimmer.dart';
 import 'package:timeago/timeago.dart' as timeago;
 
 class CommentsPage extends StatefulWidget {
-  final String postId;
-  const CommentsPage({super.key, required this.postId});
+  final String entityId; // ID of the entity (e.g., noteId, lostAndFoundId)
+  final String entityType; // Type of the entity (e.g., "notes", "lostandfound")
+
+  const CommentsPage({
+    super.key,
+    required this.entityId,
+    required this.entityType,
+  });
 
   @override
   State<CommentsPage> createState() => _CommentsPageState();
@@ -27,26 +32,62 @@ class _CommentsPageState extends State<CommentsPage> {
     _commentController.addListener(() => setState(() {}));
   }
 
+  String _getTableName() {
+    // Map entityType to the correct table name
+    if (widget.entityType == 'notes') {
+      return 'ncomments';
+    } else if (widget.entityType == 'lostandfound') {
+      return 'lafcomments';
+    } else {
+      throw Exception('Invalid entityType: ${widget.entityType}');
+    }
+  }
+
   Future<void> _fetchComments() async {
     setState(() => _isLoading = true);
     try {
+      final tableName = _getTableName();
+      debugPrint('Fetching comments from table: $tableName');
+      debugPrint('Entity Type: ${widget.entityType}');
+      debugPrint('Entity ID: ${widget.entityId}');
+
       final response = await Supabase.instance.client
-          .from('lafcomments')
-          .select('*, user:users(name)')
-          .eq('item_id', widget.postId)
-          .order('created_at', ascending: true);
+          .from(tableName)
+          .select('*')
+          .eq('item_id', widget.entityId);
+
+      debugPrint('Supabase response: $response');
+
       final data = List<Map<String, dynamic>>.from(response);
       if (mounted) {
         setState(() => _comments = data);
       }
     } catch (error) {
       debugPrint('Error fetching comments: ${error.toString()}');
+      debugPrintStack(stackTrace: StackTrace.current); // Print stack trace
       if (mounted) {
         _showErrorDialog('Failed to load comments. Please try again.');
       }
+    } finally {
+      if (mounted) {
+        setState(() => _isLoading = false);
+      }
     }
-    if (mounted) {
-      setState(() => _isLoading = false);
+  }
+
+  Future<void> _deleteComment(String commentId) async {
+    try {
+      final tableName = _getTableName();
+      await Supabase.instance.client
+          .from(tableName)
+          .delete()
+          .eq('id', commentId);
+      setState(() {
+        _comments.removeWhere((comment) => comment['id'] == commentId);
+      });
+    } catch (error) {
+      debugPrint('Error deleting comment: ${error.toString()}');
+      _showErrorDialog('Failed to delete comment. Please try again.');
     }
   }
 
@@ -61,18 +102,18 @@ class _CommentsPageState extends State<CommentsPage> {
         setState(() => _isPosting = false);
         return;
       }
-      // Insert the comment into the database.
-      await Supabase.instance.client.from('lafcomments').insert({
+
+      final tableName = _getTableName();
+      await Supabase.instance.client.from(tableName).insert({
         'user_id': currentUser.id,
-        'item_id': widget.postId,
+        'item_id': widget
+            .entityId, // Use `item_id` instead of `${widget.entityType}_id`
         'comment_text': commentText,
         'created_at': DateTime.now().toIso8601String(),
       }).select();
-      // Clear the input field.
+
       _commentController.clear();
-      // Refresh comments.
       await _fetchComments();
-      // Scroll to the bottom.
       WidgetsBinding.instance.addPostFrameCallback((_) {
         if (_scrollController.hasClients) {
           _scrollController.animateTo(
@@ -88,23 +129,6 @@ class _CommentsPageState extends State<CommentsPage> {
     }
     if (mounted) {
       setState(() => _isPosting = false);
-    }
-  }
-
-  Future<void> _deleteComment(String commentId) async {
-    try {
-      await Supabase.instance.client
-          .from('lafcomments')
-          .delete()
-          .eq('id', commentId);
-      if (mounted) {
-        setState(() {
-          _comments.removeWhere((comment) => comment['id'] == commentId);
-        });
-      }
-    } catch (error) {
-      debugPrint('Error deleting comment: ${error.toString()}');
-      _showErrorDialog('Failed to delete comment. Please try again.');
     }
   }
 
@@ -130,68 +154,6 @@ class _CommentsPageState extends State<CommentsPage> {
     _commentController.dispose();
     _scrollController.dispose();
     super.dispose();
-  }
-
-  // Shimmer effect for loading comments.
-  Widget _buildCommentShimmer() {
-    return Shimmer.fromColors(
-      baseColor: Colors.grey[300]!,
-      highlightColor: Colors.grey[100]!,
-      child: ListView.builder(
-        padding: const EdgeInsets.all(16),
-        itemCount: 5,
-        itemBuilder: (_, __) => Padding(
-          padding: const EdgeInsets.only(bottom: 16),
-          child: Row(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Container(
-                width: 40,
-                height: 40,
-                decoration: BoxDecoration(
-                  color: Colors.white,
-                  shape: BoxShape.circle,
-                ),
-              ),
-              const SizedBox(width: 12),
-              Expanded(
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Container(
-                      height: 16,
-                      width: 120,
-                      decoration: BoxDecoration(
-                        color: Colors.white,
-                        borderRadius: BorderRadius.circular(8),
-                      ),
-                    ),
-                    const SizedBox(height: 8),
-                    Container(
-                      height: 12,
-                      width: double.infinity,
-                      decoration: BoxDecoration(
-                        color: Colors.white,
-                        borderRadius: BorderRadius.circular(8),
-                      ),
-                    ),
-                    const SizedBox(height: 6),
-                    Container(
-                      height: 12,
-                      width: MediaQuery.of(context).size.width * 0.6,
-                      decoration: BoxDecoration(
-                        color: Colors.white,
-                        borderRadius: BorderRadius.circular(8),
-                      ),
-                    ),
-                  ],
-                ),
-              ),
-            ],
-          ),
-        ),
-      ),
-    );
   }
 
   @override
@@ -257,79 +219,82 @@ class _CommentsPageState extends State<CommentsPage> {
                   ),
           ),
           const Divider(height: 1),
-          Container(
-            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-            decoration: BoxDecoration(
-              color: Colors.white,
-              boxShadow: [
-                BoxShadow(
-                  color: Colors.black.withAlpha(5),
-                  offset: const Offset(0, -1),
-                  blurRadius: 3,
+          _buildCommentInput(),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildCommentInput() {
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+      decoration: BoxDecoration(
+        color: Colors.white,
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withAlpha(5),
+            offset: const Offset(0, -1),
+            blurRadius: 3,
+          ),
+        ],
+      ),
+      child: SafeArea(
+        child: Row(
+          children: [
+            Expanded(
+              child: TextField(
+                controller: _commentController,
+                textCapitalization: TextCapitalization.sentences,
+                decoration: InputDecoration(
+                  hintText: 'Add a comment...',
+                  hintStyle: TextStyle(color: Colors.grey[400]),
+                  border: OutlineInputBorder(
+                    borderRadius: BorderRadius.circular(24),
+                    borderSide: BorderSide.none,
+                  ),
+                  filled: true,
+                  fillColor: Colors.grey[100],
+                  contentPadding: const EdgeInsets.symmetric(
+                    horizontal: 16,
+                    vertical: 8,
+                  ),
                 ),
-              ],
+              ),
             ),
-            child: SafeArea(
-              child: Row(
-                children: [
-                  Expanded(
-                    child: TextField(
-                      controller: _commentController,
-                      textCapitalization: TextCapitalization.sentences,
-                      decoration: InputDecoration(
-                        hintText: 'Add a comment...',
-                        hintStyle: TextStyle(color: Colors.grey[400]),
-                        border: OutlineInputBorder(
-                          borderRadius: BorderRadius.circular(24),
-                          borderSide: BorderSide.none,
-                        ),
-                        filled: true,
-                        fillColor: Colors.grey[100],
-                        contentPadding: const EdgeInsets.symmetric(
-                          horizontal: 16,
-                          vertical: 8,
+            const SizedBox(width: 8),
+            _isPosting
+                ? Container(
+                    width: 36,
+                    height: 36,
+                    padding: const EdgeInsets.all(6),
+                    child: const CircularProgressIndicator(strokeWidth: 2),
+                  )
+                : Material(
+                    color: _commentController.text.trim().isEmpty
+                        ? Colors.grey[300]
+                        : Colors.black,
+                    borderRadius: BorderRadius.circular(18),
+                    child: InkWell(
+                      borderRadius: BorderRadius.circular(18),
+                      onTap: _commentController.text.trim().isEmpty
+                          ? null
+                          : _postComment,
+                      child: Container(
+                        width: 36,
+                        height: 36,
+                        alignment: Alignment.center,
+                        child: Icon(
+                          LineIcons.paperPlane,
+                          color: _commentController.text.trim().isEmpty
+                              ? Colors.grey[500]
+                              : Colors.white,
+                          size: 16,
                         ),
                       ),
                     ),
                   ),
-                  const SizedBox(width: 8),
-                  _isPosting
-                      ? Container(
-                          width: 36,
-                          height: 36,
-                          padding: const EdgeInsets.all(6),
-                          child:
-                              const CircularProgressIndicator(strokeWidth: 2),
-                        )
-                      : Material(
-                          color: _commentController.text.trim().isEmpty
-                              ? Colors.grey[300]
-                              : Colors.black,
-                          borderRadius: BorderRadius.circular(18),
-                          child: InkWell(
-                            borderRadius: BorderRadius.circular(18),
-                            onTap: _commentController.text.trim().isEmpty
-                                ? null
-                                : _postComment,
-                            child: Container(
-                              width: 36,
-                              height: 36,
-                              alignment: Alignment.center,
-                              child: Icon(
-                                LineIcons.paperPlane,
-                                color: _commentController.text.trim().isEmpty
-                                    ? Colors.grey[500]
-                                    : Colors.white,
-                                size: 16,
-                              ),
-                            ),
-                          ),
-                        ),
-                ],
-              ),
-            ),
-          ),
-        ],
+          ],
+        ),
       ),
     );
   }
@@ -341,5 +306,23 @@ class _CommentsPageState extends State<CommentsPage> {
     } catch (e) {
       return '';
     }
+  }
+
+  Widget _buildCommentShimmer() {
+    return ListView.builder(
+      itemCount: 5,
+      itemBuilder: (context, index) {
+        return Padding(
+          padding: const EdgeInsets.symmetric(vertical: 8.0, horizontal: 16.0),
+          child: Container(
+            height: 50,
+            decoration: BoxDecoration(
+              color: Colors.grey[300],
+              borderRadius: BorderRadius.circular(8),
+            ),
+          ),
+        );
+      },
+    );
   }
 }
