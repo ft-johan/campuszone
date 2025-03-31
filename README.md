@@ -1,5 +1,17 @@
 CampusZone is a comprehensive Flutter mobile application designed to enhance campus life by providing a centralized platform for students to connect, share resources, and stay informed about campus activities.
 
+## Abstract
+
+CampusZone is a mobile application developed using Flutter to provide a centralized platform for students to enhance their campus life. The application offers various features such as user authentication, profile management, community events, notice board, resources section, and a chat system. The primary goal of CampusZone is to facilitate better communication, resource sharing, and engagement among students on campus.
+
+## Problem Statement
+
+In many educational institutions, students face challenges in staying informed about campus activities, connecting with peers, and accessing resources. Traditional methods of communication, such as notice boards and emails, are often inefficient and fail to reach all students. There is a need for a modern, centralized platform that can address these issues and improve the overall campus experience for students.
+
+## Objective
+
+The objective of CampusZone is to create a user-friendly mobile application that addresses the communication and resource-sharing needs of students on campus. The application aims to provide a seamless experience for students to stay informed about campus events, connect with peers, access resources, and engage in meaningful interactions.
+
 ## Features
 
 - **User Authentication**
@@ -32,6 +44,27 @@ CampusZone is a comprehensive Flutter mobile application designed to enhance cam
   - Direct messaging between users
   - Message history
   - Real-time updates
+
+## System Model Architecture
+
+The system model architecture of CampusZone is designed to ensure scalability, reliability, and ease of maintenance. The architecture consists of the following components:
+
+1. **Frontend**: The mobile application developed using Flutter, which provides the user interface and handles user interactions.
+2. **Backend**: Supabase is used as the backend service, providing authentication, database, and storage functionalities.
+3. **Database**: Supabase's PostgreSQL database is used to store user data, events, notices, chat messages, and lost and found items.
+4. **Storage**: Supabase's storage service is used to store user profile pictures and images related to lost and found items.
+5. **API**: Supabase's RESTful API is used to interact with the database and storage services.
+
+## System Workflow
+
+The system workflow of CampusZone involves the following steps:
+
+1. **User Registration and Authentication**: Users can sign up and log in to the application using their email and password. Supabase handles the authentication process.
+2. **Profile Management**: Users can view and edit their profile details, including updating their profile picture. The updated information is stored in the Supabase database.
+3. **Community Events**: Users can view a list of upcoming campus events, register for events via external URLs, and view event details. Event data is fetched from the Supabase database.
+4. **Notice Board**: Users can view campus-wide announcements and notifications. Notices are categorized and timestamped for easy reference. Notice data is fetched from the Supabase database.
+5. **Resources Section**: Users can post lost and found items with images and descriptions. Other users can comment on these posts. Lost and found data is stored in the Supabase database, and images are stored in Supabase storage.
+6. **Chat System**: Users can send direct messages to other users, view message history, and receive real-time updates. Chat messages are stored in the Supabase database.
 
 ## Screenshots
 
