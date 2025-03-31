@@ -303,7 +303,12 @@ class _NoticeBoardContentState extends State<NoticeBoardContent>
   late AnimationController _headerAnimationController;
   late Animation<double> _headerAnimation;
   late ScrollController _scrollController;
-  late StreamSubscription<List<Notice>> _noticeSubscription;
+  late StreamSubscription<List<Notice>> _noticeSubscription =
+      _supabaseService.subscribeToNotices().listen((notices) {
+    setState(() {
+      _notices = notices;
+    });
+  });
 
   @override
   void initState() {

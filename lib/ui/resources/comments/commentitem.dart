@@ -1,8 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:line_icons/line_icons.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
-import 'package:campuszone/globals.dart' as globals;
-import 'package:shimmer/shimmer.dart';
 
 class CommentItem extends StatefulWidget {
   final Map<String, dynamic> comment;
@@ -27,6 +25,7 @@ class _CommentItemState extends State<CommentItem>
   bool _showOverlay = false;
   late AnimationController _animationController;
   late Animation<double> _scaleAnimation;
+  String? _userName;
 
   @override
   void initState() {
@@ -41,12 +40,42 @@ class _CommentItemState extends State<CommentItem>
         curve: Curves.easeInOut,
       ),
     );
+
+    _fetchUserName(); // Fetch the user's name when the widget initializes
   }
 
   @override
   void dispose() {
     _animationController.dispose();
     super.dispose();
+  }
+
+  Future<void> _fetchUserName() async {
+    try {
+      final userId = widget.comment['user_id'];
+      if (userId == null) return;
+
+      final response = await Supabase.instance.client
+          .from('users')
+          .select('name')
+          .eq('id', userId)
+          .single();
+
+      if (response['name'] != null) {
+        setState(() {
+          _userName = response['name'];
+        });
+      } else {
+        setState(() {
+          _userName = 'Anonymous';
+        });
+      }
+    } catch (e) {
+      debugPrint('Error fetching user name: $e');
+      setState(() {
+        _userName = 'Anonymous';
+      });
+    }
   }
 
   void _toggleOverlay() {
@@ -98,55 +127,36 @@ class _CommentItemState extends State<CommentItem>
   }
 
   Widget _buildProfilePic() {
-    // Retrieve the user id from the comment data.
-    final String userId = widget.comment['user']?['id'] ?? '';
-    // If no userId, fallback to a default avatar.
-    if (userId.isEmpty) {
-      return const CircleAvatar(
-        radius: 20,
-        child: Icon(LineIcons.user),
-      );
-    }
-    // Get the public URL from Supabase storage.
-    final baseUrl = Supabase.instance.client.storage
-        .from('profilepic')
-        .getPublicUrl('$userId/profile_picture.jpg');
+    final String initial = _userName != null && _userName!.isNotEmpty
+        ? _userName![0].toUpperCase()
+        : '?';
 
-    // Use ValueListenableBuilder so that changes to the cache buster rebuild the image.
-    return ValueListenableBuilder<String?>(
-      valueListenable: globals.globalCacheBuster,
-      builder: (context, cacheBuster, child) {
-        final String updatedUrl = (cacheBuster ?? '').isNotEmpty
-            ? '$baseUrl?cacheBuster=$cacheBuster'
-            : baseUrl;
-        return CircleAvatar(
-          radius: 20,
-          backgroundColor: Colors.grey[300],
-          child: ClipOval(
-            child: Image.network(
-              updatedUrl,
-              width: 40,
-              height: 40,
-              fit: BoxFit.cover,
-              loadingBuilder: (context, child, loadingProgress) {
-                if (loadingProgress == null) return child;
-                return Shimmer.fromColors(
-                  baseColor: Colors.grey[300]!,
-                  highlightColor: Colors.grey[100]!,
-                  child: Container(
-                    width: 40,
-                    height: 40,
-                    color: Colors.white,
-                  ),
-                );
-              },
-              errorBuilder: (context, error, stackTrace) {
-                return const Icon(LineIcons.user, color: Colors.white);
-              },
+    return CircleAvatar(
+      radius: 20,
+      backgroundColor: Colors.transparent,
+      child: Container(
+        decoration: BoxDecoration(
+          shape: BoxShape.circle,
+          gradient: LinearGradient(
+            colors: [
+              Colors.blueAccent,
+              Colors.purpleAccent,
+            ],
+            begin: Alignment.topLeft,
+            end: Alignment.bottomRight,
+          ),
+        ),
+        child: Center(
+          child: Text(
+            initial,
+            style: const TextStyle(
+              color: Colors.white,
+              fontSize: 18,
+              fontWeight: FontWeight.bold,
             ),
           ),
-        );
-      },
+        ),
+      ),
     );
   }
 
@@ -157,7 +167,7 @@ class _CommentItemState extends State<CommentItem>
   @override
   Widget build(BuildContext context) {
     final commentText = widget.comment['comment_text'] ?? '';
-    final String userName = widget.comment['user']?['name'] ?? 'Anonymous';
+    final String displayName = _userName ?? 'Loading...';
 
     return GestureDetector(
       onLongPress: _isOwnComment ? _toggleOverlay : null,
@@ -185,10 +195,8 @@ class _CommentItemState extends State<CommentItem>
                     child: Row(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
-                        // Profile picture section using globalCacheBuster.
                         _buildProfilePic(),
                         const SizedBox(width: 12),
-                        // Content section
                         Expanded(
                           child: Column(
                             crossAxisAlignment: CrossAxisAlignment.start,
@@ -198,7 +206,7 @@ class _CommentItemState extends State<CommentItem>
                                     MainAxisAlignment.spaceBetween,
                                 children: [
                                   Text(
-                                    userName,
+                                    displayName,
                                     style: const TextStyle(
                                       fontWeight: FontWeight.bold,
                                       fontSize: 14,
@@ -241,7 +249,6 @@ class _CommentItemState extends State<CommentItem>
                   ),
                 ),
               ),
-              // Action overlay
               if (_showOverlay)
                 Positioned.fill(
                   child: GestureDetector(

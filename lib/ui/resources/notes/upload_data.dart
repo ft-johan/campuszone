@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:file_picker/file_picker.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 import 'package:uuid/uuid.dart';
+import 'package:pdfrx/pdfrx.dart'; // Import pdfrx for PDF rendering
 
 class UploadDataPage extends StatefulWidget {
   const UploadDataPage({super.key});
@@ -13,6 +14,7 @@ class UploadDataPage extends StatefulWidget {
 
 class _UploadDataPageState extends State<UploadDataPage> {
   File? _pdfFile;
+  PdfDocument? _pdfDocument; // To hold the loaded PDF document
   bool _isLoading = false;
 
   final TextEditingController _titleController = TextEditingController();
@@ -33,6 +35,8 @@ class _UploadDataPageState extends State<UploadDataPage> {
   void dispose() {
     _titleController.dispose();
     _descController.dispose();
+    _pdfDocument
+        ?.dispose(); // Dispose of the PDF document when the widget is disposed
     super.dispose();
   }
 
@@ -43,8 +47,13 @@ class _UploadDataPageState extends State<UploadDataPage> {
         allowedExtensions: ['pdf'],
       );
       if (result != null && result.files.single.path != null) {
+        final pickedFile = File(result.files.single.path!);
+        final document = await PdfDocument.openFile(
+            pickedFile.path); // Load the PDF document
+
         setState(() {
-          _pdfFile = File(result.files.single.path!);
+          _pdfFile = pickedFile;
+          _pdfDocument = document;
         });
       }
     } catch (e) {
@@ -66,6 +75,8 @@ class _UploadDataPageState extends State<UploadDataPage> {
       return;
     }
 
+    debugPrint('Logged-in user ID: ${user.id}'); // Debugging
+
     setState(() => _isLoading = true);
     if (!mounted) return;
 
@@ -73,13 +84,15 @@ class _UploadDataPageState extends State<UploadDataPage> {
       final String noteId = const Uuid().v4();
       final String filePath = '${user.id}/$noteId.pdf';
 
+      // Upload the PDF file to Supabase storage
       await Supabase.instance.client.storage
           .from('notes')
           .upload(filePath, _pdfFile!);
 
+      // Insert the note into the database
       await Supabase.instance.client.from('notes').insert({
         'note_id': noteId,
-        'user_id': user.id,
+        'user_id': user.id, // Ensure this matches the logged-in user's ID
         'title': _titleController.text,
         'description': _descController.text,
         'file_path': filePath,
@@ -101,6 +114,8 @@ class _UploadDataPageState extends State<UploadDataPage> {
   void _removePdf() {
     setState(() {
       _pdfFile = null;
+      _pdfDocument?.dispose(); // Dispose of the PDF document when removed
+      _pdfDocument = null;
     });
   }
 
@@ -151,7 +166,7 @@ class _UploadDataPageState extends State<UploadDataPage> {
                   crossAxisAlignment: CrossAxisAlignment.stretch,
                   children: [
                     Center(
-                      child: _pdfFile == null
+                      child: _pdfDocument == null
                           ? AspectRatio(
                               aspectRatio: 1,
                               child: Container(
@@ -172,20 +187,28 @@ class _UploadDataPageState extends State<UploadDataPage> {
                             )
                           : AspectRatio(
                               aspectRatio: 1,
-                              child: Container(
-                                decoration: BoxDecoration(
-                                  borderRadius: BorderRadius.circular(12),
-                                  border:
-                                      Border.all(color: Colors.grey, width: 2),
-                                  color: Colors.grey[300],
-                                  child: const Center(
-                                    child: Icon(
-                                      Icons.picture_as_pdf,
-                                      color: Colors.red,
-                                      size: 40,
-                                    ),
-                                  ),
-                                ),
+                              child: FutureBuilder<PdfDocument>(
+                                future: PdfDocument.openFile(_pdfFile!.path),
+                                builder: (context, snapshot) {
+                                  if (snapshot.connectionState ==
+                                      ConnectionState.waiting) {
+                                    return const Center(
+                                        child: CircularProgressIndicator());
+                                  } else if (snapshot.hasError) {
+                                    return Center(
+                                        child: Text(
+                                            'Error loading PDF: ${snapshot.error}'));
+                                  } else if (snapshot.hasData) {
+                                    final document = snapshot.data!;
+                                    return PdfPageView(
+                                      document: document,
+                                      pageNumber: 1,
+                                    );
+                                  } else {
+                                    return const Center(
+                                        child: Text('No preview available'));
+                                  }
+                                },
                               ),
                             ),
                     ),

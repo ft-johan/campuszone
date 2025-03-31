@@ -1,7 +1,7 @@
 import 'package:campuszone/globals.dart' as globals;
 import 'package:campuszone/ui/profile/editprofile/profilepic/fullscreenpicpage.dart';
+import 'package:campuszone/ui/resources/comments/comments.dart';
 import 'package:campuszone/ui/resources/lostandfound/upload_data.dart';
-import 'package:campuszone/ui/resources/lostandfound/comments/comments.dart';
 import 'package:flutter/material.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 import 'package:line_icons/line_icons.dart';
@@ -216,21 +216,14 @@ class _LostAndFoundPageState extends State<LostAndFoundPage>
     );
   }
 
-  void _openCommentsPage(String postId) {
+  void _openCommentsPage(String lostAndFoundId) {
     Navigator.push(
       context,
-      PageRouteBuilder(
-        pageBuilder: (context, animation, secondaryAnimation) =>
-            CommentsPage(postId: postId),
-        transitionsBuilder: (context, animation, secondaryAnimation, child) {
-          final tween = Tween(begin: const Offset(0.0, 1.0), end: Offset.zero)
-              .chain(CurveTween(curve: Curves.easeOutCubic));
-          return SlideTransition(
-            position: animation.drive(tween),
-            child: child,
-          );
-        },
-        transitionDuration: const Duration(milliseconds: 400),
+      MaterialPageRoute(
+        builder: (context) => CommentsPage(
+          entityId: lostAndFoundId,
+          entityType: 'lostandfound',
+        ),
       ),
     );
   }
@@ -267,7 +260,7 @@ class _LostAndFoundPageState extends State<LostAndFoundPage>
   }
 
 // Profile picture builder using globalCacheBuster and Image.network
-  Widget _buildProfilePic(String userId) {
+  Widget _buildProfilePic(String userId, Map<String, dynamic> post) {
     final baseUrl = Supabase.instance.client.storage
         .from('profilepic')
         .getPublicUrl('$userId/profile_picture.jpg');
@@ -276,7 +269,8 @@ class _LostAndFoundPageState extends State<LostAndFoundPage>
         : baseUrl;
 
     return Hero(
-      tag: 'profile1-$userId${globals.globalCacheBuster.value ?? ""}',
+      tag:
+          'profile1-${post['item_id']}-$userId${globals.globalCacheBuster.value ?? ""}',
       child: Container(
         width: 48,
         height: 48,
@@ -469,7 +463,8 @@ class _LostAndFoundPageState extends State<LostAndFoundPage>
                                             children: [
                                               (user != null &&
                                                       user['id'] != null)
-                                                  ? _buildProfilePic(user['id'])
+                                                  ? _buildProfilePic(
+                                                      user['id'], post)
                                                   : Container(
                                                       width: 48,
                                                       height: 48,
@@ -512,7 +507,8 @@ class _LostAndFoundPageState extends State<LostAndFoundPage>
                                             onTap: () =>
                                                 _openFullScreenImage(imageUrl!),
                                             child: Hero(
-                                              tag: 'image_${post['item_id']}',
+                                              tag:
+                                                  'image_${post['item_id']}_$index',
                                               child: Container(
                                                 height: 250,
                                                 color: Colors.black,

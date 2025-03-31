@@ -1,10 +1,12 @@
+import 'package:campuszone/globals.dart';
+import 'package:campuszone/ui/resources/comments/comments.dart';
+import 'package:campuszone/ui/resources/notes/upload_data.dart';
+import 'package:campuszone/ui/resources/notes/pdf.dart';
 import 'package:flutter/material.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 import 'package:line_icons/line_icons.dart';
 import 'package:shimmer/shimmer.dart';
-import 'package:pdf_render/pdf_render_widgets.dart';
-import 'comments/comments.dart';
-import 'upload_data.dart';
+import 'package:pdfrx/pdfrx.dart'; // Updated import
 
 class NotesPage extends StatefulWidget {
   const NotesPage({super.key});
@@ -13,12 +15,14 @@ class NotesPage extends StatefulWidget {
   State<NotesPage> createState() => _NotesPageState();
 }
 
-class _NotesPageState extends State<NotesPage> with SingleTickerProviderStateMixin {
+class _NotesPageState extends State<NotesPage>
+    with SingleTickerProviderStateMixin {
   bool _isLoading = false;
   double _loadingProgress = 0.0;
   List<dynamic> _notes = [];
   late AnimationController _animationController;
-  final GlobalKey<RefreshIndicatorState> _refreshIndicatorKey = GlobalKey<RefreshIndicatorState>();
+  final GlobalKey<RefreshIndicatorState> _refreshIndicatorKey =
+      GlobalKey<RefreshIndicatorState>();
 
   @override
   void initState() {
@@ -44,9 +48,10 @@ class _NotesPageState extends State<NotesPage> with SingleTickerProviderStateMix
     });
 
     try {
-      final progressTimer = Stream.periodic(const Duration(milliseconds: 100), (i) => i)
-          .take(10)
-          .listen((i) {
+      final progressTimer =
+          Stream.periodic(const Duration(milliseconds: 100), (i) => i)
+              .take(10)
+              .listen((i) {
         if (mounted) {
           setState(() {
             _loadingProgress = (i + 1) / 10;
@@ -128,7 +133,8 @@ class _NotesPageState extends State<NotesPage> with SingleTickerProviderStateMix
             style: ElevatedButton.styleFrom(
               backgroundColor: Colors.redAccent,
               foregroundColor: Colors.white,
-              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
+              shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(8)),
             ),
             child: const Text('Delete'),
           ),
@@ -167,7 +173,8 @@ class _NotesPageState extends State<NotesPage> with SingleTickerProviderStateMix
             ),
             backgroundColor: Colors.black,
             behavior: SnackBarBehavior.floating,
-            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+            shape:
+                RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
             duration: const Duration(seconds: 2),
           ),
         );
@@ -210,24 +217,30 @@ class _NotesPageState extends State<NotesPage> with SingleTickerProviderStateMix
   void _openCommentsPage(String noteId) {
     Navigator.push(
       context,
-      PageRouteBuilder(
-        pageBuilder: (context, animation, secondaryAnimation) => CommentsPage(noteId: noteId),
-        transitionsBuilder: (context, animation, secondaryAnimation, child) {
-          final tween = Tween(begin: const Offset(0.0, 1.0), end: Offset.zero)
-              .chain(CurveTween(curve: Curves.easeOutCubic));
-          return SlideTransition(
-            position: animation.drive(tween),
-            child: child,
-          );
-        },
-        transitionDuration: const Duration(milliseconds: 400),
+      MaterialPageRoute(
+        builder: (context) => CommentsPage(
+          entityId: noteId,
+          entityType: 'notes',
+        ),
       ),
     );
   }
 
-  void _openPdf(String filePath) {
-    final url = Supabase.instance.client.storage.from('notes').getPublicUrl(filePath);
-    launchUrl(Uri.parse(url), mode: LaunchMode.externalApplication);
+  void _openPdf(String filePath, Map<String, dynamic> note) async {
+    final url =
+        Supabase.instance.client.storage.from('notes').getPublicUrl(filePath);
+    final pdfUrl = Uri.parse(url);
+
+    Navigator.push(
+      context,
+      MaterialPageRoute(
+        builder: (context) => PdfViewerPage(
+          title: note['title'] ?? 'Untitled',
+          filePath: filePath,
+          pdfUrl: pdfUrl,
+        ),
+      ),
+    );
   }
 
   String _formatDate(String dateString) {
@@ -251,7 +264,7 @@ class _NotesPageState extends State<NotesPage> with SingleTickerProviderStateMix
     final baseUrl = Supabase.instance.client.storage
         .from('profilepic')
         .getPublicUrl('$userId/profile_picture.jpg');
-    final String profileUrl = (globalCacheBuster ?? '').isNotEmpty
+    final String profileUrl = (globalCacheBuster.value ?? '').isNotEmpty
         ? '$baseUrl?cacheBuster=$globalCacheBuster'
         : baseUrl;
 
@@ -333,10 +346,13 @@ class _NotesPageState extends State<NotesPage> with SingleTickerProviderStateMix
             Navigator.push(
               context,
               PageRouteBuilder(
-                pageBuilder: (context, animation, secondaryAnimation) => const UploadDataPage(),
-                transitionsBuilder: (context, animation, secondaryAnimation, child) {
-                  final tween = Tween(begin: const Offset(0.0, 1.0), end: Offset.zero)
-                      .chain(CurveTween(curve: Curves.easeOutCubic));
+                pageBuilder: (context, animation, secondaryAnimation) =>
+                    const UploadDataPage(),
+                transitionsBuilder:
+                    (context, animation, secondaryAnimation, child) {
+                  final tween =
+                      Tween(begin: const Offset(0.0, 1.0), end: Offset.zero)
+                          .chain(CurveTween(curve: Curves.easeOutCubic));
                   return SlideTransition(
                     position: animation.drive(tween),
                     child: child,
@@ -373,7 +389,8 @@ class _NotesPageState extends State<NotesPage> with SingleTickerProviderStateMix
                         child: Column(
                           mainAxisAlignment: MainAxisAlignment.center,
                           children: [
-                            const Icon(LineIcons.search, size: 64, color: Colors.grey),
+                            const Icon(LineIcons.search,
+                                size: 64, color: Colors.grey),
                             const SizedBox(height: 16),
                             Text(
                               'No notes found',
@@ -396,8 +413,10 @@ class _NotesPageState extends State<NotesPage> with SingleTickerProviderStateMix
                         itemCount: _notes.length,
                         itemBuilder: (context, index) {
                           final note = _notes[index];
-                          final Map<String, dynamic>? user = note['user'] as Map<String, dynamic>?;
-                          final String userName = user?['name'] ?? 'Unknown User';
+                          final Map<String, dynamic>? user =
+                              note['user'] as Map<String, dynamic>?;
+                          final String userName =
+                              user?['name'] ?? 'Unknown User';
 
                           final String? filePath = note['file_path'] as String?;
                           String? pdfUrl;
@@ -405,7 +424,7 @@ class _NotesPageState extends State<NotesPage> with SingleTickerProviderStateMix
                             pdfUrl = Supabase.instance.client.storage
                                 .from('notes')
                                 .getPublicUrl(filePath);
-                            if ((globalCacheBuster ?? '').isNotEmpty) {
+                            if ((globalCacheBuster.value ?? '').isNotEmpty) {
                               pdfUrl = '$pdfUrl?t=$globalCacheBuster';
                             }
                           }
@@ -415,7 +434,8 @@ class _NotesPageState extends State<NotesPage> with SingleTickerProviderStateMix
                             color: Colors.white,
                             shape: RoundedRectangleBorder(
                               borderRadius: BorderRadius.circular(12),
-                              side: BorderSide(color: Colors.grey.shade200, width: 1),
+                              side: BorderSide(
+                                  color: Colors.grey.shade200, width: 1),
                             ),
                             margin: const EdgeInsets.symmetric(vertical: 10),
                             child: Column(
@@ -435,7 +455,8 @@ class _NotesPageState extends State<NotesPage> with SingleTickerProviderStateMix
                                       const SizedBox(width: 12),
                                       Expanded(
                                         child: Column(
-                                          crossAxisAlignment: CrossAxisAlignment.start,
+                                          crossAxisAlignment:
+                                              CrossAxisAlignment.start,
                                           children: [
                                             Text(
                                               userName,
@@ -461,22 +482,34 @@ class _NotesPageState extends State<NotesPage> with SingleTickerProviderStateMix
                                 ),
                                 if (pdfUrl != null && pdfUrl.isNotEmpty)
                                   GestureDetector(
-                                    onTap: () => _openPdf(filePath!),
+                                    onTap: () => _openPdf(filePath!, note),
                                     child: Hero(
                                       tag: 'pdf_${note['note_id']}',
                                       child: Container(
                                         height: 250,
                                         color: Colors.black,
-                                        child: PdfDocumentLoader.openFile(
-                                          pdfUrl,
-                                          pageNumber: 1,
-                                          pageBuilder: (context, textureBuilder, pageSize) {
-                                            return textureBuilder(
-                                              backgroundFill: true,
-                                              size: Size(
-                                                pageSize.width,
-                                                pageSize.height,
-                                              ),
+                                        child: FutureBuilder<PdfDocument>(
+                                          future: PdfDocument.openUri(
+                                              Uri.parse(pdfUrl)),
+                                          builder: (context, snapshot) {
+                                            if (snapshot.connectionState ==
+                                                ConnectionState.waiting) {
+                                              return const Center(
+                                                  child:
+                                                      CircularProgressIndicator());
+                                            } else if (snapshot.hasError) {
+                                              return Center(
+                                                  child: Text(
+                                                      'Error loading PDF: ${snapshot.error}'));
+                                            } else if (!snapshot.hasData) {
+                                              return const Center(
+                                                  child: Text('No PDF found.'));
+                                            }
+
+                                            final document = snapshot.data!;
+                                            return PdfPageView(
+                                              document: document,
+                                              pageNumber: 1,
                                             );
                                           },
                                         ),
@@ -486,7 +519,8 @@ class _NotesPageState extends State<NotesPage> with SingleTickerProviderStateMix
                                 Padding(
                                   padding: const EdgeInsets.all(16),
                                   child: Column(
-                                    crossAxisAlignment: CrossAxisAlignment.start,
+                                    crossAxisAlignment:
+                                        CrossAxisAlignment.start,
                                     children: [
                                       Text(
                                         note['title'] ?? 'No Title',
@@ -506,14 +540,17 @@ class _NotesPageState extends State<NotesPage> with SingleTickerProviderStateMix
                                       ),
                                       const Divider(height: 24),
                                       Row(
-                                        mainAxisAlignment: MainAxisAlignment.spaceAround,
+                                        mainAxisAlignment:
+                                            MainAxisAlignment.spaceAround,
                                         children: [
                                           _buildActionButton(
                                             icon: LineIcons.comment,
                                             label: 'Comments',
-                                            onTap: () => _openCommentsPage(note['note_id'].toString()),
+                                            onTap: () => _openCommentsPage(
+                                                note['note_id'].toString()),
                                           ),
-                                          if (currentUserId != null && note['user_id'] == currentUserId)
+                                          if (currentUserId != null &&
+                                              note['user_id'] == currentUserId)
                                             _buildActionButton(
                                               icon: LineIcons.trash,
                                               label: 'Delete',
