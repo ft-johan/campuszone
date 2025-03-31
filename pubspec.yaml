@@ -54,6 +54,7 @@ dependencies:
   flutter_dotenv: ^5.2.1
   pdfrx: ^1.1.18
   file_picker: ^10.0.0
+  flutter_launcher_icons: ^0.14.3
 
 dev_dependencies:
   flutter_test:
@@ -113,4 +114,13 @@ flutter:
        - asset: assets/fonts/Excalifont.ttf
   assets:
     - assets/profile.png
+    - assets/icon/icon.png
     - .env
+
+flutter_launcher_icons:
+  android: true
+  ios: false
+  image_path: "assets/icon/icon.png"
+  min_sdk_android: 21 # android min sdk min:16, default 21
+  adaptive_icon_background: "#ffffff"
+  adaptive_icon_foreground: "assets/icon/icon.png"

@@ -152,10 +152,13 @@ class _LostAndFoundPageState extends State<LostAndFoundPage>
         _showLoadingSnackBar('Deleting post...');
         final String? imagePath = post['image_path'] as String?;
         if (imagePath != null && imagePath.isNotEmpty) {
+          debugPrint('Deleting image from storage: $imagePath');
           await Supabase.instance.client.storage
               .from('lostandfound')
               .remove([imagePath]);
         }
+
+        debugPrint('Deleting post with item_id: ${post['item_id']}');
         await Supabase.instance.client
             .from('lostandfound')
             .delete()
@@ -183,6 +186,7 @@ class _LostAndFoundPageState extends State<LostAndFoundPage>
 
         _fetchPosts();
       } catch (error) {
+        debugPrint('Error deleting post: ${error.toString()}');
         if (mounted) {
           ScaffoldMessenger.of(context).hideCurrentSnackBar();
           _showErrorDialog('Error deleting post. Please try again.');
@@ -277,7 +281,7 @@ class _LostAndFoundPageState extends State<LostAndFoundPage>
         decoration: BoxDecoration(
           shape: BoxShape.circle,
           border: Border.all(
-            color: Colors.black.withValues(alpha: .2),
+            color: Colors.black.withAlpha(51),
             width: 1.5,
           ),
         ),
