@@ -1,5 +1,6 @@
 import 'package:campuszone/custom/custom_divider.dart';
 import 'package:campuszone/ui/resources/lostandfound/lost_and_found.dart';
+import 'package:campuszone/ui/resources/notes/notes.dart';
 import 'package:flutter/material.dart';
 import 'package:line_icons/line_icons.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
@@ -53,6 +54,8 @@ class ResourcesPage extends StatelessWidget {
                             _buildHeaderSection(),
 
                             _buildLostAndFoundCard(context),
+
+                            _buildNotesCard(context),
 
                             const SizedBox(height: 16),
 
@@ -124,6 +127,38 @@ class ResourcesPage extends StatelessWidget {
           child: Center(
             child: Text(
               'Lost and Found Section',
+              style: const TextStyle(
+                fontSize: 32.0,
+                fontFamily: 'Excalifont',
+                color: Colors.white,
+              ),
+            ),
+          ),
+        ),
+      ),
+    );
+  }
+
+  Widget _buildNotesCard(BuildContext context) {
+    return GestureDetector(
+      onTap: () {
+        Navigator.push(
+          context,
+          MaterialPageRoute(builder: (_) => const NotesPage()),
+        );
+      },
+      child: Card(
+        elevation: 10,
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(20),
+        ),
+        color: Colors.black,
+        margin: const EdgeInsets.symmetric(vertical: 8.0),
+        child: Padding(
+          padding: const EdgeInsets.all(16.0),
+          child: Center(
+            child: Text(
+              'Notes Section',
               style: const TextStyle(
                 fontSize: 32.0,
                 fontFamily: 'Excalifont',
