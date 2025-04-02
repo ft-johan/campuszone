@@ -3,13 +3,11 @@ import 'package:campuszone/globals.dart';
 import 'package:campuszone/ui/profile/editprofile/edit_profile.dart';
 import 'package:campuszone/ui/profile/editprofile/profilepic/profile_picture.dart';
 import 'package:campuszone/ui/profile/editprofile/profilepic/fullscreenpicpage.dart';
-import 'package:campuszone/ui/profile/settings.dart';
 import 'package:flutter/material.dart';
 import 'package:line_icons/line_icons.dart';
 import 'package:shimmer/shimmer.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 import 'package:url_launcher/url_launcher.dart';
-import 'package:animations/animations.dart';
 
 class ProfilePage extends StatefulWidget {
   const ProfilePage({super.key});
@@ -234,19 +232,6 @@ class _ProfilePageState extends State<ProfilePage>
               child: Row(
                 mainAxisAlignment: MainAxisAlignment.end,
                 children: [
-                  // Using OpenContainer for settings button with nice transition
-                  OpenContainer(
-                    transitionDuration: const Duration(milliseconds: 500),
-                    openBuilder: (context, closedContainer) =>
-                        const SettingsPage(),
-                    closedElevation: 0,
-                    closedShape: const CircleBorder(),
-                    closedColor: Colors.transparent,
-                    closedBuilder: (context, openContainer) => IconButton(
-                      icon: const Icon(LineIcons.cog, color: Colors.black),
-                      onPressed: openContainer,
-                    ),
-                  ),
                   IconButton(
                     icon: const Icon(LineIcons.alternateSignOut,
                         color: Colors.black),

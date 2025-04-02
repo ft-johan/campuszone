@@ -303,7 +303,7 @@ class _NoticeBoardContentState extends State<NoticeBoardContent>
   late AnimationController _headerAnimationController;
   late Animation<double> _headerAnimation;
   late ScrollController _scrollController;
-  late StreamSubscription<List<Notice>> _noticeSubscription =
+  late final StreamSubscription<List<Notice>> _noticeSubscription =
       _supabaseService.subscribeToNotices().listen((notices) {
     setState(() {
       _notices = notices;
@@ -331,15 +331,11 @@ class _NoticeBoardContentState extends State<NoticeBoardContent>
       _isLoading = true;
     });
     _notices = await _supabaseService.getNotices();
-    setState(() {
-      _isLoading = false;
-    });
-    _noticeSubscription =
-        _supabaseService.subscribeToNotices().listen((notices) {
+    if (mounted) {
       setState(() {
-        _notices = notices;
+        _isLoading = false;
       });
-    });
+    }
   }
 
   @override

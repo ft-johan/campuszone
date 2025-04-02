@@ -126,8 +126,21 @@ class _LoginPageState extends State<LoginPage>
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     Center(
-                      child:
-                          Icon(LineIcons.lock, size: 120, color: Colors.black),
+                      child: Column(
+                        children: [
+                          Image.asset(
+                            'assets/icon/icon.png',
+                            width: 80,
+                            height: 80,
+                          ),
+                          const SizedBox(height: 10),
+                          const Text("CampusZone",
+                              style: TextStyle(
+                                  fontSize: 20,
+                                  fontWeight: FontWeight.bold,
+                                  color: Colors.black)),
+                        ],
+                      ),
                     ),
                     const SizedBox(height: 60),
                     const Text("Welcome Back!",

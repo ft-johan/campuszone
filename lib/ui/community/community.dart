@@ -1,20 +1,8 @@
 import 'package:campuszone/ui/community/events/events.dart';
 import 'package:campuszone/custom/custom_divider.dart';
+import 'package:campuszone/ui/community/communityspace/community_space.dart'; // Added import
 import 'package:flutter/material.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
-
-// Class representing each community's data
-class Community {
-  final String name; // Name of the community
-  final Color color; // Background color for the container
-  final String imageUrl; // Path to the local image asset
-
-  Community({
-    required this.name,
-    required this.color,
-    required this.imageUrl,
-  });
-}
 
 class CommunityPage extends StatefulWidget {
   const CommunityPage({super.key});
@@ -58,7 +46,7 @@ class _CommunityPageState extends State<CommunityPage> {
 
               // Title of Popular Communities
               Padding(
-                padding: const EdgeInsets.only(top: 60.0, bottom: 30.0),
+                padding: const EdgeInsets.only(top: 60.0, bottom: 15.0),
                 child: Text(
                   "Popular Communities:",
                   style: TextStyle(
@@ -69,7 +57,10 @@ class _CommunityPageState extends State<CommunityPage> {
                   textAlign: TextAlign.center,
                 ),
               ),
-
+              SizedBox(
+                height: 400, // Adjust based on expected content size
+                child: CommunitySpace(),
+              ),
               // Custom Divider
               Padding(
                 padding: const EdgeInsets.only(top: 20.0, bottom: 20.0),
@@ -96,8 +87,11 @@ class _CommunityPageState extends State<CommunityPage> {
 
               // Event Section
               Padding(
-                padding: const EdgeInsets.only(bottom: 200.0),
-                child: EventPage(),
+                padding: const EdgeInsets.only(bottom: 20.0),
+                child: SizedBox(
+                  width: double.infinity,
+                  child: EventPage(),
+                ),
               ),
             ],
           ),
