@@ -244,4 +244,4 @@ Contributions are welcome! Please follow these steps:
 
 ## Acknowledgements
 
-- Johan george , kinnan , nandu for their ideas and support
+- Johan george , kinnan(Krishnajith pappadam) , nandu pappadam for their ideas and support
